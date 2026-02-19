@@ -1,10 +1,10 @@
 <img src='./assest/Mint infrastrucure logo.png' alt='Logo'><br>
 
-## Mint Infrastructure CLI
+# Mint Infrastructure
 
-A gorgeous lightweight Markdown-to-HTML compiler written in C99.
+> A gorgeous lightweight Markdown-to-HTML compiler written in C99.
 
-`mintif (Mint Infrastructure)` reads a `.md` file, parses common Markdown syntax, wraps the result in a full HTML document, and optionally embeds CSS from a style file.
+`Mintif (Mint Infrastructure)` reads a `.md` file, parses common Markdown syntax, wraps the result in a full HTML document, and optionally embeds CSS from a style file.
 
 ### Features
 
