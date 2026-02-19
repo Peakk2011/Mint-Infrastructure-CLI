@@ -1,3 +1,5 @@
+<img src='./assest/Mint infrastrucure logo.png' alt='Logo'><br>
+
 ## Mint Infrastructure CLI
 
 A gorgeous lightweight Markdown-to-HTML compiler written in C99.
