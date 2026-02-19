@@ -24,6 +24,14 @@
 #include "src/path/path.h"
 #include "src/html/html.h"
 
+static void copy_trunc(char *dst, size_t dst_sz, const char *src)
+{
+    if (dst_sz == 0)
+        return;
+    strncpy(dst, src, dst_sz - 1);
+    dst[dst_sz - 1] = '\0';
+}
+
 static void print_help(void)
 {
     puts(
@@ -90,22 +98,24 @@ int main(int argc, char *argv[])
     /* Resolve paths */
     char out_path[1024];
     if (output_file)
-        strncpy(out_path, output_file, sizeof(out_path) - 1);
+        copy_trunc(out_path, sizeof(out_path), output_file);
     else
         path_replace_ext(input_file, out_path, sizeof(out_path));
 
     char css_path[1024];
     if (styles_file)
     {
-        strncpy(css_path, styles_file, sizeof(css_path) - 1);
+        copy_trunc(css_path, sizeof(css_path), styles_file);
     }
     else
     {
         char dir[1024];
         path_exe_dir(argv[0], dir, sizeof(dir));
-        strncpy(css_path, dir, 1012);
-        css_path[1012] = '\0';
-        strcat(css_path, "/styles.css");
+        if (snprintf(css_path, sizeof(css_path), "%s/styles.css", dir) >= (int)sizeof(css_path))
+        {
+            fprintf(stderr, "  x  CSS path too long.\n");
+            return 1;
+        }
     }
 
     /* Read markdown */
@@ -124,6 +134,12 @@ int main(int argc, char *argv[])
     {
         fprintf(stderr, "  !  No styles.css at %s — no styles applied.\n", css_path);
         css = (char *)calloc(1, 1);
+        if (!css)
+        {
+            fprintf(stderr, "  x  Out of memory.\n");
+            free(markdown);
+            return 1;
+        }
     }
 
     /* Title */
@@ -131,13 +147,29 @@ int main(int argc, char *argv[])
     path_stem(input_file, fallback, sizeof(fallback));
     
     if (custom_title)
-        strncpy(title, custom_title, sizeof(title) - 1);
+        copy_trunc(title, sizeof(title), custom_title);
     else
         extract_title(markdown, title, sizeof(title), fallback);
 
     /* Compile */
     char *body = parse_markdown(markdown, md_len);
+    if (!body)
+    {
+        fprintf(stderr, "  x  Failed to parse markdown (out of memory).\n");
+        free(markdown);
+        free(css);
+        return 1;
+    }
+
     char *html = html_build(title, css, body);
+    if (!html)
+    {
+        fprintf(stderr, "  x  Failed to build HTML (out of memory).\n");
+        free(markdown);
+        free(css);
+        free(body);
+        return 1;
+    }
 
     /* Write */
     if (!io_write_file(out_path, html, strlen(html)))

@@ -7,6 +7,7 @@ typedef struct {
     char  *data;
     size_t len;
     size_t cap;
+    int ok;
 } Buf;
 
 void buf_init(Buf *b);

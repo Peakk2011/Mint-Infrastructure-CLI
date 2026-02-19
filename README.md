@@ -58,13 +58,13 @@ build.bat
 #### Manual build
 
 ```bash
-gcc mintif.c -o mintif.exe -std=c99 -O2
+gcc main.c src/buf/buf.c src/io/io.c src/parser/inline.c src/parser/parser.c src/path/path.c src/html/html.c -o mintif.exe -std=c99 -O2 -I.
 ```
 
 On Unix-like systems, use:
 
 ```bash
-gcc mintif.c -o mintif -std=c99 -O2
+gcc main.c src/buf/buf.c src/io/io.c src/parser/inline.c src/parser/parser.c src/path/path.c src/html/html.c -o mintif -std=c99 -O2 -I.
 ```
 
 ### Usage
@@ -101,10 +101,11 @@ mintif notes.md -s styles.css
 
 ### Project Files
 
-- `mintif.c`: Main compiler source
+- `main.c`: Main compiler source
 - `build.bat`: Windows build helper
-- `styles.css`: Default embedded stylesheet
-- `mintif.exe`: Built binary (if already compiled)
+- `styles.css`: Default stylesheet loaded at runtime from the executable directory
+- `dist/mintif.exe`: Built binary output (after running `build.bat`)
+- `dist/styles.css`: Copied stylesheet output (after running `build.bat`)
 
 ### Scope and Limitations
 

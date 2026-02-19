@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdint.h>
 
 /* Line */
 
@@ -12,12 +13,30 @@ typedef struct { const char *ptr; size_t len; } Line;
 static Line *split_lines(const char *src, size_t src_len, size_t *n_out) {
     size_t cap = 64, n = 0;
     Line *lines = (Line *)malloc(cap * sizeof(Line));
+    if (!lines) {
+        *n_out = 0;
+        return NULL;
+    }
     const char *p = src, *end = src + src_len;
     while (p < end) {
         const char *nl = (const char *)memchr(p, '\n', end - p);
         size_t len = nl ? (size_t)(nl - p) : (size_t)(end - p);
         if (len > 0 && p[len - 1] == '\r') len--;
-        if (n == cap) { cap *= 2; lines = (Line *)realloc(lines, cap * sizeof(Line)); }
+        if (n == cap) {
+            if (cap > SIZE_MAX / 2 / sizeof(Line)) {
+                free(lines);
+                *n_out = 0;
+                return NULL;
+            }
+            cap *= 2;
+            Line *tmp = (Line *)realloc(lines, cap * sizeof(Line));
+            if (!tmp) {
+                free(lines);
+                *n_out = 0;
+                return NULL;
+            }
+            lines = tmp;
+        }
         lines[n].ptr = p;
         lines[n].len = len;
         n++;
@@ -29,9 +48,11 @@ static Line *split_lines(const char *src, size_t src_len, size_t *n_out) {
 
 /* Line helpers */
 
-static const char *ltrim(const char *s) {
-    while (*s == ' ' || *s == '\t') s++;
-    return s;
+static const char *ltrim(const char *s, size_t len, size_t *trimmed_len) {
+    size_t i = 0;
+    while (i < len && (s[i] == ' ' || s[i] == '\t')) i++;
+    if (trimmed_len) *trimmed_len = len - i;
+    return s + i;
 }
 
 static int is_blank(const char *s, size_t len) {
@@ -57,6 +78,25 @@ static int heading_level(const char *s, size_t len) {
     if (lv == 0 || lv > 6) return 0;
     if (lv < (int)len && s[lv] == ' ') return lv;
     return 0;
+}
+
+static int setext_level(const char *s, size_t len) {
+    size_t i = 0;
+    while (i < len && (s[i] == ' ' || s[i] == '\t')) i++;
+    if (i == len) return 0;
+
+    char marker = s[i];
+    if (marker != '=' && marker != '-') return 0;
+
+    size_t count = 0;
+    while (i < len && s[i] == marker) {
+        count++;
+        i++;
+    }
+    while (i < len && (s[i] == ' ' || s[i] == '\t')) i++;
+    if (i != len || count == 0) return 0;
+
+    return marker == '=' ? 1 : 2;
 }
 
 static int is_table_sep(const char *ptr, size_t len) {
@@ -106,10 +146,13 @@ typedef enum {
 #define CLOSE_PARA() \
     do { if (in_para) { buf_puts(&out, "</p>\n"); in_para = 0; } } while(0)
 
+#define CLOSE_LIST_ITEM() \
+    do { if (list_item_open) { buf_puts(&out, "</li>\n"); list_item_open = 0; } } while(0)
+
 #define CLOSE_BLOCK() \
     do { \
-        if      (state == S_UL)         buf_puts(&out, "</ul>\n"); \
-        else if (state == S_OL)         buf_puts(&out, "</ol>\n"); \
+        if      (state == S_UL)         { CLOSE_LIST_ITEM(); buf_puts(&out, "</ul>\n"); } \
+        else if (state == S_OL)         { CLOSE_LIST_ITEM(); buf_puts(&out, "</ol>\n"); } \
         else if (state == S_BLOCKQUOTE) buf_puts(&out, "</blockquote>\n"); \
         else if (state == S_TABLE)      buf_puts(&out, "</tbody>\n</table>\n"); \
         state = S_NONE; \
@@ -118,12 +161,18 @@ typedef enum {
 char *parse_markdown(const char *src, size_t src_len) {
     size_t n_lines;
     Line  *lines = split_lines(src, src_len, &n_lines);
+    if (!lines) return NULL;
 
     Buf   out;
     buf_init(&out);
+    if (!out.ok) {
+        free(lines);
+        return NULL;
+    }
 
     State state     = S_NONE;
     int   in_para   = 0;
+    int   list_item_open = 0;
     char  fence_ch  = 0;
     int   fence_len = 0;
 
@@ -198,17 +247,13 @@ char *parse_markdown(const char *src, size_t src_len) {
         if (i + 1 < n_lines) {
             const char *nx  = lines[i+1].ptr;
             size_t       nxl = lines[i+1].len;
-            int all_eq = 1, all_dash = 1;
-            for (size_t k = 0; k < nxl; k++) {
-                if (nx[k] != '=') all_eq   = 0;
-                if (nx[k] != '-') all_dash = 0;
-            }
-            if (all_eq && nxl >= 1) {
+            int level = setext_level(nx, nxl);
+            if (level == 1) {
                 CLOSE_PARA(); CLOSE_BLOCK();
                 buf_puts(&out, "<h1>"); parse_inline(&out, ptr, len);
                 buf_puts(&out, "</h1>\n"); i++; continue;
             }
-            if (all_dash && nxl >= 2) {
+            if (level == 2) {
                 CLOSE_PARA(); CLOSE_BLOCK();
                 buf_puts(&out, "<h2>"); parse_inline(&out, ptr, len);
                 buf_puts(&out, "</h2>\n"); i++; continue;
@@ -236,28 +281,36 @@ char *parse_markdown(const char *src, size_t src_len) {
 
         /* Unordered list */
         {
-            const char *t = ltrim(ptr);
-            if ((t[0]=='-' || t[0]=='*' || t[0]=='+') && t[1]==' ') {
+            size_t tlen = 0;
+            const char *t = ltrim(ptr, len, &tlen);
+            if (tlen >= 2 && (t[0]=='-' || t[0]=='*' || t[0]=='+') && t[1]==' ') {
                 CLOSE_PARA();
                 if (state != S_UL) { CLOSE_BLOCK(); buf_puts(&out, "<ul>\n"); state = S_UL; }
+                CLOSE_LIST_ITEM();
                 const char *item = t + 2;
-                size_t ilen = len - (size_t)(item - ptr);
-                buf_puts(&out, "<li>"); parse_inline(&out, item, ilen); buf_puts(&out, "</li>\n");
+                size_t ilen = tlen - 2;
+                buf_puts(&out, "<li>");
+                parse_inline(&out, item, ilen);
+                list_item_open = 1;
                 continue;
             }
         }
 
         /* Ordered list */
         {
-            const char *t = ltrim(ptr);
-            int digits = 0;
-            while (isdigit((unsigned char)t[digits])) digits++;
-            if (digits > 0 && t[digits] == '.' && t[digits+1] == ' ') {
+            size_t tlen = 0;
+            const char *t = ltrim(ptr, len, &tlen);
+            size_t digits = 0;
+            while (digits < tlen && isdigit((unsigned char)t[digits])) digits++;
+            if (digits > 0 && digits + 1 < tlen && t[digits] == '.' && t[digits+1] == ' ') {
                 CLOSE_PARA();
                 if (state != S_OL) { CLOSE_BLOCK(); buf_puts(&out, "<ol>\n"); state = S_OL; }
+                CLOSE_LIST_ITEM();
                 const char *item = t + digits + 2;
-                size_t ilen = len - (size_t)(item - ptr);
-                buf_puts(&out, "<li>"); parse_inline(&out, item, ilen); buf_puts(&out, "</li>\n");
+                size_t ilen = tlen - digits - 2;
+                buf_puts(&out, "<li>");
+                parse_inline(&out, item, ilen);
+                list_item_open = 1;
                 continue;
             }
         }
@@ -285,8 +338,13 @@ char *parse_markdown(const char *src, size_t src_len) {
         /* Paragraph */
         if (!in_para) {
             if (state == S_UL || state == S_OL) {
+                if (list_item_open) {
+                    buf_puts(&out, " ");
+                } else {
+                    buf_puts(&out, "<li>");
+                    list_item_open = 1;
+                }
                 parse_inline(&out, ptr, len);
-                buf_puts(&out, "\n");
             } else {
                 buf_puts(&out, "<p>");
                 parse_inline(&out, ptr, len);
@@ -303,7 +361,14 @@ char *parse_markdown(const char *src, size_t src_len) {
     CLOSE_BLOCK();
 
     #undef CLOSE_PARA
+    #undef CLOSE_LIST_ITEM
     #undef CLOSE_BLOCK
+
+    if (!out.ok) {
+        buf_free(&out);
+        free(lines);
+        return NULL;
+    }
 
     free(lines);
     return out.data;

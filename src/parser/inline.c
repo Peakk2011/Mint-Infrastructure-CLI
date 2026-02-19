@@ -1,4 +1,63 @@
 #include "inline.h"
+#include <ctype.h>
+
+static int is_ws(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v';
+}
+
+static int is_allowed_scheme(const char *s, size_t len) {
+    if (len == 4 && tolower((unsigned char)s[0]) == 'h' &&
+        tolower((unsigned char)s[1]) == 't' &&
+        tolower((unsigned char)s[2]) == 't' &&
+        tolower((unsigned char)s[3]) == 'p') return 1;
+
+    if (len == 5 && tolower((unsigned char)s[0]) == 'h' &&
+        tolower((unsigned char)s[1]) == 't' &&
+        tolower((unsigned char)s[2]) == 't' &&
+        tolower((unsigned char)s[3]) == 'p' &&
+        tolower((unsigned char)s[4]) == 's') return 1;
+
+    if (len == 6 && tolower((unsigned char)s[0]) == 'm' &&
+        tolower((unsigned char)s[1]) == 'a' &&
+        tolower((unsigned char)s[2]) == 'i' &&
+        tolower((unsigned char)s[3]) == 'l' &&
+        tolower((unsigned char)s[4]) == 't' &&
+        tolower((unsigned char)s[5]) == 'o') return 1;
+
+    if (len == 3 && tolower((unsigned char)s[0]) == 't' &&
+        tolower((unsigned char)s[1]) == 'e' &&
+        tolower((unsigned char)s[2]) == 'l') return 1;
+
+    if (len == 3 && tolower((unsigned char)s[0]) == 'f' &&
+        tolower((unsigned char)s[1]) == 't' &&
+        tolower((unsigned char)s[2]) == 'p') return 1;
+
+    return 0;
+}
+
+static int sanitize_url(const char *url, size_t url_len, const char **out_ptr, size_t *out_len) {
+    size_t start = 0;
+    size_t end = url_len;
+
+    while (start < end && is_ws(url[start])) start++;
+    while (end > start && is_ws(url[end - 1])) end--;
+    if (end <= start) return 0;
+
+    for (size_t i = start; i < end; i++) {
+        unsigned char c = (unsigned char)url[i];
+        if (c < 0x20 || c == 0x7f) return 0;
+    }
+
+    size_t i = start;
+    while (i < end && url[i] != ':' && url[i] != '/' && url[i] != '?' && url[i] != '#') i++;
+    if (i < end && url[i] == ':') {
+        if (!is_allowed_scheme(url + start, i - start)) return 0;
+    }
+
+    *out_ptr = url + start;
+    *out_len = end - start;
+    return 1;
+}
 
 void parse_inline(Buf *out, const char *s, size_t len) {
     size_t i = 0;
@@ -17,10 +76,17 @@ void parse_inline(Buf *out, const char *s, size_t len) {
                 size_t u = a_end + 2, u_end = a_end + 2;
                 while (u_end < len && s[u_end] != ')') u_end++;
                 if (u_end < len) {
+                    const char *safe_url = NULL;
+                    size_t safe_len = 0;
+                    if (!sanitize_url(s + u, u_end - u, &safe_url, &safe_len)) {
+                        buf_append(out, &s[i], 1);
+                        i++;
+                        continue;
+                    }
                     buf_puts(out, "<img alt=\"");
                     buf_escape(out, s + a, a_end - a);
                     buf_puts(out, "\" src=\"");
-                    buf_escape(out, s + u, u_end - u);
+                    buf_escape(out, safe_url, safe_len);
                     buf_puts(out, "\">");
                     i = u_end + 1;
                     continue;
@@ -36,8 +102,15 @@ void parse_inline(Buf *out, const char *s, size_t len) {
                 size_t u = t_end + 2, u_end = t_end + 2;
                 while (u_end < len && s[u_end] != ')') u_end++;
                 if (u_end < len) {
+                    const char *safe_url = NULL;
+                    size_t safe_len = 0;
+                    if (!sanitize_url(s + u, u_end - u, &safe_url, &safe_len)) {
+                        buf_append(out, &s[i], 1);
+                        i++;
+                        continue;
+                    }
                     buf_puts(out, "<a href=\"");
-                    buf_escape(out, s + u, u_end - u);
+                    buf_escape(out, safe_url, safe_len);
                     buf_puts(out, "\">");
                     parse_inline(out, s + t, t_end - t);
                     buf_puts(out, "</a>");
