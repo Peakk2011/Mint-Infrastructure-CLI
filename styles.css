@@ -1,6 +1,72 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&family=Anuphan:wght@400;600;700&display=swap');
 @import url('https://api.fontshare.com/v2/css?f[]=general-sans@1&f[]=jet-brains-mono@1&display=swap');
 
+/* Design Tokens: Colors */
+
+:root {
+    /* Base */
+    --theme-color-text:            #000000;
+    --theme-color-bg:              #fcfffc;
+
+    /* Link */
+    --theme-color-link:            #3d5869;
+    --theme-color-link-hover:      #666666;
+
+    /* Code & Preformatted */
+    --theme-color-code-bg:         #f7f7f7;
+    --theme-color-code-outline:    hsl(0, 0%, 88%);
+
+    /* Blockquote */
+    --theme-color-blockquote-bg:   #f0f0f0;
+    --theme-color-blockquote-text: #666666;
+
+    /* Border & Divider */
+    --theme-color-border:          hsl(0, 0%, 86%);
+
+    /* Table */
+    --theme-color-table-th-border: hsl(0, 0%, 70%);
+
+    /* Shadow */
+    --theme-color-shadow-sm:       rgba(0, 0, 0, 0.05);
+    --theme-color-shadow-md:       rgba(0, 0, 0, 0.06);
+
+    /* Responsive Type Scale */
+    --type-base:                   16px;
+    --type-ratio:                  1.2;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Base */
+        --theme-color-text:            #f4f4f4;
+        --theme-color-bg:              #0f0f0f;
+
+        /* Link */
+        --theme-color-link:            hsla(240, 85%, 69%, 1);
+        --theme-color-link-hover:      #999999;
+
+        /* Code & Preformatted */
+        --theme-color-code-bg:         #1f1f1f;
+        --theme-color-code-outline:    hsl(0, 0%, 88%); /* Unused in dark; retained as fallback */
+
+        /* Blockquote */
+        --theme-color-blockquote-bg:   hsl(120, 0%, 15%);
+        --theme-color-blockquote-text: #666666;
+
+        /* Border & Divider */
+        --theme-color-border:          #343434;
+
+        /* Table */
+        --theme-color-table-th-border: #1f1f1f;
+
+        /* Shadow — opacity increased to compensate for reduced contrast on dark surfaces */
+        --theme-color-shadow-sm:       rgba(0, 0, 0, 0.20);
+        --theme-color-shadow-md:       rgba(0, 0, 0, 0.30);
+    }
+}
+
+/* Reset */
+
 *,
 *::before,
 *::after {
@@ -10,8 +76,11 @@
 }
 
 html {
+    text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
 }
+
+/* Base */
 
 body {
     font-family: "Inter", "Leelawadee UI", system-ui, sans-serif;
@@ -23,15 +92,29 @@ body {
     max-width: 750px;
     margin: 0 auto;
     padding: 1.5rem;
-    color: #000;
-    background: #fcfffc;
+    color: var(--theme-color-text);
+    background: var(--theme-color-bg);
     font-size: 14.5px;
 }
 
 @media (max-width: 768px) {
+    :root {
+        --type-ratio: 1.333;
+        --type-base: 14px;
+    }
+    
     body {
         max-width: 100%;
-        padding: 1.5rem;
+        padding: 2.5rem;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin-top: 0rem;
     }
 }
 
@@ -39,9 +122,11 @@ div,
 p,
 span {
     font-family: "Inter", "Leelawadee UI", system-ui, sans-serif;
-    letter-spacing: 0.3px;
+    letter-spacing: -0.2px;
     font-size: 14.5px;
 }
+
+/* Headings */
 
 h1,
 h2,
@@ -51,48 +136,51 @@ h5,
 h6 {
     font-family: 'General Sans', 'Anuphan', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     margin-bottom: 1rem;
+    margin-top: 1rem;
     font-weight: 550;
     line-height: 1.3;
     letter-spacing: -0.9px;
 }
 
 h1 {
-    font-size: 24.012px;
+    font-size: calc(var(--type-base) * var(--type-ratio) * var(--type-ratio) * var(--type-ratio));
     padding-bottom: 0.4rem;
 }
 
 h2 {
-    font-size: 20.3px;
+    font-size: calc(var(--type-base) * var(--type-ratio) * var(--type-ratio));
     padding-bottom: 0.3rem;
     letter-spacing: -0.8px;
 }
 
 h3 {
-    font-size: 17.1535px;
+    font-size: calc(var(--type-base) * var(--type-ratio));
     letter-spacing: -0.2px;
 }
 
 h4 {
-    font-size: 14.5px;
+    font-size: var(--type-base);
     letter-spacing: -0.2px;
 }
 
 h5 {
-    font-size: 14.5px;
+    font-size: calc(var(--type-base) / var(--type-ratio));
     letter-spacing: -0.2px;
 }
 
 h6 {
-    font-size: 14.5px;
+    font-size: calc(var(--type-base) / var(--type-ratio) / var(--type-ratio));
     letter-spacing: -0.2px;
 }
+
+/* Typography */
 
 p {
     margin-bottom: 1.5rem;
 }
 
 a {
-    color: #3d5869;
+    color: var(--theme-color-link);
     text-decoration: none;
     transition: color 150ms ease;
     border-bottom: solid 1px currentColor;
@@ -100,11 +188,13 @@ a {
 
 a:hover,
 a:focus {
-    color: #666;
+    color: var(--theme-color-link-hover);
 }
 
+/* Code & Preformatted Text */
+
 code {
-    background: #f7f7f7;
+    background: var(--theme-color-code-bg);
     padding: 0.125rem 0.25rem;
     border-radius: 4px;
     font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
@@ -112,13 +202,15 @@ code {
 }
 
 pre {
-    background: #f7f7f7;
+    background: var(--theme-color-code-bg);
     padding: 1rem;
     border-radius: 4px;
     overflow-x: auto;
     margin: 0 0 1.5rem;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05), 0 24px 48px rgba(0, 0, 0, 0.06);
-    outline: solid 1px hsl(0, 0%, 88%);
+    box-shadow:
+        0 12px 24px var(--theme-color-shadow-sm),
+        0 24px 48px var(--theme-color-shadow-md);
+    outline: solid 1px var(--theme-color-code-outline);
 }
 
 pre code {
@@ -126,15 +218,23 @@ pre code {
     padding: 0;
     border-radius: 0;
     font-size: 13.25px;
+    white-space: pre;
+    tab-size: 4;
+    -moz-tab-size: 4;
+    font-variant-ligatures: none;
 }
 
+/* Blockquote */
+
 blockquote {
-    background-color: #f0f0f0;
+    background-color: var(--theme-color-blockquote-bg);
     margin: 0 0 1.5rem;
     padding-left: 1rem;
-    color: #666;
+    color: var(--theme-color-blockquote-text);
     font-style: italic;
 }
+
+/* Lists */
 
 ul,
 ol {
@@ -147,17 +247,21 @@ li {
     font-size: 14.5px;
 }
 
-li>ul,
-li>ol {
+li > ul,
+li > ol {
     margin-top: 0.5rem;
     font-size: 14.5px;
 }
 
+/* Horizontal Rule */
+
 hr {
     border: none;
-    border-top: 1px solid #a7a6a3;
+    border-top: 1px solid var(--theme-color-border);
     margin: 1.5rem 0;
 }
+
+/* Table */
 
 table {
     border-collapse: collapse;
@@ -167,15 +271,17 @@ table {
 
 th,
 td {
-    border: 1px solid #a7a6a3;
-    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--theme-color-border);
+    padding: 0.6rem 0rem;
     text-align: left;
 }
 
 th {
-    background: #eae9e5;
+    border-bottom: 1px solid var(--theme-color-table-th-border);
     font-weight: 550;
 }
+
+/* Embedded Media */
 
 img,
 video,
@@ -189,6 +295,8 @@ object {
     margin: 1rem auto;
 }
 
+/* Form Controls */
+
 input[type="checkbox"],
 input[type="radio"] {
     width: 1rem;
@@ -197,48 +305,11 @@ input[type="radio"] {
     transform: translateY(1.5px);
 }
 
+/* Figure Caption */
+
 figcaption {
     font-size: 0.875rem;
     text-align: center;
     margin-top: 0.5rem;
     font-style: italic;
-}
-
-/* Dark Mode */
-@media (prefers-color-scheme: dark) {
-    body {
-        color: #f4f4f4;
-        background: #0f0f0f;
-    }
-
-    a {
-        color: hsla(240, 85%, 69%, 1);
-    }
-
-    a:hover,
-    a:focus {
-        color: #999;
-    }
-
-    code,
-    pre {
-        background: #1f1f1f;
-    }
-
-    blockquote {
-        background-color: hsl(120, 0%, 15%);
-    }
-
-    hr {
-        border-top-color: #343434;
-    }
-
-    th,
-    td {
-        border-color: #343434;
-    }
-
-    th {
-        background: #1f1f1f;
-    }
 }
