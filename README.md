@@ -14,6 +14,7 @@
 - Auto-detects document title from first `# Heading`
 - Supports custom page title and custom CSS file
 - Uses `styles.css` next to the executable by default
+- Parser code split into focused modules (`parser_line`, `parser_html`, `inline_html`)
 
 ### Supported Markdown
 
@@ -55,16 +56,22 @@
 build.bat
 ```
 
+#### macOS (shell script)
+
+```bash
+./build-macos.sh
+```
+
 #### Manual build
 
 ```bash
-gcc main.c src/buf/buf.c src/io/io.c src/parser/inline.c src/parser/parser.c src/path/path.c src/html/html.c -o mintif.exe -std=c99 -O2 -I.
+gcc main.c src/buf/buf.c src/io/io.c src/parser/inline.c src/parser/inline_html.c src/parser/parser.c src/parser/parser_line.c src/parser/parser_html.c src/path/path.c src/html/html.c -o mintif.exe -std=c99 -O2 -I.
 ```
 
 On Unix-like systems, use:
 
 ```bash
-gcc main.c src/buf/buf.c src/io/io.c src/parser/inline.c src/parser/parser.c src/path/path.c src/html/html.c -o mintif -std=c99 -O2 -I.
+gcc main.c src/buf/buf.c src/io/io.c src/parser/inline.c src/parser/inline_html.c src/parser/parser.c src/parser/parser_line.c src/parser/parser_html.c src/path/path.c src/html/html.c -o mintif -std=c99 -O2 -I.
 ```
 
 ### Usage
@@ -101,8 +108,14 @@ mintif notes.md -s styles.css
 
 ### Project Files
 
-- `main.c`: Main compiler source
+- `main.c`: CLI entrypoint and compile orchestration
+- `src/parser/parser.c`: Main block parser flow
+- `src/parser/parser_line.c`: Line splitting + line helper utilities
+- `src/parser/parser_html.c`: HTML block-line validation helpers
+- `src/parser/inline.c`: Markdown inline token parser
+- `src/parser/inline_html.c`: Inline raw HTML and URL sanitization helpers
 - `build.bat`: Windows build helper
+- `build-macos.sh`: macOS build helper
 - `styles.css`: Default stylesheet loaded at runtime from the executable directory
 - `dist/mintif.exe`: Built binary output (after running `build.bat`)
 - `dist/styles.css`: Copied stylesheet output (after running `build.bat`)

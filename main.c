@@ -4,7 +4,8 @@
  *
  * Compile:
  *   gcc main.c src/buf/buf.c src/io/io.c src/parser/inline.c \
- *       src/parser/parser.c src/path/path.c src/html/html.c \
+ *       src/parser/inline_html.c src/parser/parser.c src/parser/parser_line.c \
+ *       src/parser/parser_html.c src/path/path.c src/html/html.c \
  *       -o mintif.exe -std=c99 -O2 -I.
  *
  * Usage:
@@ -145,7 +146,7 @@ int main(int argc, char *argv[])
     /* Title */
     char title[512], fallback[256];
     path_stem(input_file, fallback, sizeof(fallback));
-    
+
     if (custom_title)
         copy_trunc(title, sizeof(title), custom_title);
     else
