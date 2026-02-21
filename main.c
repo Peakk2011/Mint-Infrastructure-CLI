@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
     if (!input_file)
     {
-        fprintf(stderr, "  x  No input file.\n");
+        fprintf(stderr, "No input file.\n");
         return 1;
     }
 
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
         path_exe_dir(argv[0], dir, sizeof(dir));
         if (snprintf(css_path, sizeof(css_path), "%s/styles.css", dir) >= (int)sizeof(css_path))
         {
-            fprintf(stderr, "  x  CSS path too long.\n");
+            fprintf(stderr, "CSS path too long.\n");
             return 1;
         }
     }
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 
     if (!markdown)
     {
-        fprintf(stderr, "  x  Cannot open: %s\n", input_file);
+        fprintf(stderr, "Cannot open: %s\n", input_file);
         return 1;
     }
 
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
         css = (char *)calloc(1, 1);
         if (!css)
         {
-            fprintf(stderr, "  x  Out of memory.\n");
+            fprintf(stderr, "Out of memory.\n");
             free(markdown);
             return 1;
         }
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
     char *body = parse_markdown(markdown, md_len);
     if (!body)
     {
-        fprintf(stderr, "  x  Failed to parse markdown (out of memory).\n");
+        fprintf(stderr, "Failed to parse markdown (out of memory).\n");
         free(markdown);
         free(css);
         return 1;
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
     char *html = html_build(title, css, body);
     if (!html)
     {
-        fprintf(stderr, "  x  Failed to build HTML (out of memory).\n");
+        fprintf(stderr, "Failed to build HTML (out of memory).\n");
         free(markdown);
         free(css);
         free(body);
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
     /* Write */
     if (!io_write_file(out_path, html, strlen(html)))
     {
-        fprintf(stderr, "  x  Cannot write: %s\n", out_path);
+        fprintf(stderr, "Cannot write: %s\n", out_path);
         free(markdown);
         free(css);
         free(body);

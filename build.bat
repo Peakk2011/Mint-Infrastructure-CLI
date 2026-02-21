@@ -22,5 +22,5 @@ if %ERRORLEVEL% == 0 (
     echo   Usage: dist\mintif.exe input.md -o output.html
 ) else (
     echo.
-    echo   x   Build failed.
+    echo Build failed.
 )
