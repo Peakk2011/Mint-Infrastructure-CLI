@@ -34,4 +34,11 @@ export default [
             "@typescript-eslint/no-explicit-any": "off",
         },
     },
+    {
+        files: ["src/preload.cts"],
+        rules: {
+            "@typescript-eslint/no-require-imports": "off",
+            "@typescript-eslint/consistent-type-imports": "off",
+        },
+    },
 ];
