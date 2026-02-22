@@ -1,0 +1,59 @@
+{
+  "name": "mint-infrastructure-gui",
+  "version": "1.0.0",
+  "description": "Desktop GUI for the Mint Infrastructure Markdown-to-HTML compiler.",
+  "main": "dist/main.js",
+  "scripts": {
+    "sync:mintif": "powershell -ExecutionPolicy Bypass -File scripts/sync-mintif.ps1",
+    "sync:renderer": "powershell -ExecutionPolicy Bypass -File scripts/sync-renderer-assets.ps1",
+    "build:ts": "tsc",
+    "build": "npm run build:ts && npm run sync:renderer",
+    "lint": "eslint \"src/**/*.{ts,cts}\"",
+    "test": "npm run build:ts && node --test tests/**/*.test.mjs",
+    "start": "node scripts/start-electron.mjs",
+    "dev": "npm run build && node scripts/start-electron.mjs",
+    "package:win": "npm run sync:mintif && npm run build && electron-builder --win"
+  },
+  "keywords": [
+    "markdown",
+    "electron",
+    "desktop",
+    "mintif"
+  ],
+  "author": "Mint Teams",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/node": "^25.2.2",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.20.1",
+    "typescript-eslint": "^8.24.1",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "electron": "^40.2.1"
+  },
+  "build": {
+    "appId": "com.mint.infrastructure.gui",
+    "productName": "Mint Infrastructure GUI",
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "vendor/mintif",
+        "to": "mintif",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    }
+  }
+}

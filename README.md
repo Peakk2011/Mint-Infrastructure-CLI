@@ -120,6 +120,82 @@ mintif notes.md -t "Project Notes"
 mintif notes.md -s styles.css
 ```
 
+### Example Input / Output
+
+Input markdown:
+
+```md
+# API Notes
+
+Mint supports **bold**, `inline code`, and tables.
+
+| Name | Status |
+| --- | --- |
+| Parser | Ready |
+```
+
+Generated HTML body (excerpt):
+
+```html
+<h1>API Notes</h1>
+<p>Mint supports <strong>bold</strong>, <code>inline code</code>, and tables.</p>
+<table>
+<thead>
+<tr><th>Name</th><th>Status</th></tr>
+</thead>
+<tbody>
+<tr><td>Parser</td><td>Ready</td></tr>
+</tbody>
+</table>
+```
+
+### Theme Configuration
+
+- CLI default: loads `styles.css` from the executable directory.
+- CLI override: pass `-s <path-to-css>` to embed a custom stylesheet.
+- GUI themes (`gui/`): supports `theme` values `default`, `mint`, `paper`, `noir`.
+- GUI accent override: `accentColor` accepts hex (`#RGB` or `#RRGGBB`).
+- GUI layout override: `layoutWidth` supports `centered` and `wide`.
+
+### Error Handling
+
+- CLI is fail-fast: exits non-zero on file read/write, parse, or allocation failures.
+- Missing default CSS is non-fatal; conversion continues without styles.
+- GUI process wrapper enforces timeout (default `45_000 ms`, clamped to `5_000..300_000 ms`).
+- GUI conversion result includes `stdout`, `stderr`, `code`, and `durationMs` for diagnostics.
+
+### C Module API Summary
+
+- `src/buf/buf.h`: dynamic buffer (`buf_init`, `buf_append`, `buf_puts`, `buf_escape`, `buf_free`).
+- `src/io/io.h`: file I/O (`io_read_file`, `io_write_file`).
+- `src/parser/parser.h`: block parse + title extraction (`parse_markdown`, `extract_title`).
+- `src/parser/inline.h`: inline markdown parsing (`parse_inline`).
+- `src/parser/parser_line.h`: line splitting and block helpers (`split_lines`, `is_rule`, `setext_level`, etc.).
+- `src/parser/parser_html.h`: raw HTML block helpers (`parse_html_tag_line`, `contains_closing_html_tag`).
+- `src/parser/inline_html.h`: inline HTML + URL sanitization helpers.
+- `src/path/path.h`: path operations (`path_replace_ext`, `path_stem`, `path_exe_dir`).
+- `src/html/html.h`: full HTML document assembly (`html_build`).
+
+### Testing
+
+Run parser regression tests:
+
+```bat
+tests\run-parser-tests.bat
+```
+
+```bash
+sh tests/run-parser-tests.sh
+```
+
+Run GUI lint/tests:
+
+```bash
+cd gui
+npm run lint
+npm test
+```
+
 ### Behavior Notes
 
 - If `-o` is omitted, output is `<input-name>.html`

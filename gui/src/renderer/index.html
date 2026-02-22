@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+    <title>Mint Infrastructure</title>
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+    <main id="app" class="app">
+        <header class="titlebar">
+            <h1>Mint Infrastructure</h1>
+        </header>
+
+        <section class="workspace" aria-label="Markdown Converter">
+            <button id="dropZone" class="drop-zone" type="button" aria-label="Drop markdown file">
+                <div class="drop-icon" aria-hidden="true">
+                    <p>.MD</p>
+                </div>
+                <p class="drop-title">Drop a Markdown<br>file here.</p>
+                <p class="drop-sub">Click to browse or drag one .md file</p>
+            </button>
+
+            <article id="confirmCard" class="confirm-card hidden" aria-live="polite">
+                <div class="confirm-card-content">
+                    <div class="confirm-markdown-icons">
+                        <div class="drop-icon" aria-hidden="true">
+                            <p>.MD</p>
+                        </div>
+                    </div>
+
+                    <p class="confirm-title">Are you sure to<br> convert this file?</p>
+                    <p id="confirmFileName" class="confirm-file"></p>
+
+                    <div class="action-row">
+                        <button id="downloadBtn" class="action-btn action-primary" type="button">Download</button>
+                        <button id="cancelBtn" class="action-btn" type="button">Cancel</button>
+                    </div>
+                </div>
+            </article>
+
+            <p id="statusMessage" class="status" aria-live="polite"></p>
+
+        </section>
+    </main>
+
+    <script src="renderer.js" defer></script>
+</body>
+
+</html>
