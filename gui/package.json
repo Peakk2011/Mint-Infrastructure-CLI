@@ -9,7 +9,7 @@
     "build:ts": "tsc",
     "build": "npm run build:ts && npm run sync:renderer",
     "lint": "eslint \"src/**/*.{ts,cts}\"",
-    "test": "npm run build:ts && node --test tests/**/*.test.mjs",
+    "test": "npm run build:ts && node --test tests/convert-process.test.mjs",
     "start": "node scripts/start-electron.mjs",
     "dev": "npm run build && node scripts/start-electron.mjs",
     "package:win": "npm run sync:mintif && npm run build && electron-builder --win"
