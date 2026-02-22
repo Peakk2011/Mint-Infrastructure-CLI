@@ -64,14 +64,36 @@ build.bat
 
 #### Manual build
 
-```bash
-gcc main.c src/buf/buf.c src/io/io.c src/parser/inline.c src/parser/inline_html.c src/parser/parser.c src/parser/parser_line.c src/parser/parser_html.c src/path/path.c src/html/html.c -o mintif.exe -std=c99 -O2 -I.
+Windows:
+
+```bat
+gcc main.c ^
+    src/buf/buf.c ^
+    src/io/io.c ^
+    src/parser/inline.c ^
+    src/parser/inline_html.c ^
+    src/parser/parser.c ^
+    src/parser/parser_line.c ^
+    src/parser/parser_html.c ^
+    src/path/path.c ^
+    src/html/html.c ^
+    -o mintif.exe -std=c99 -O2 -I.
 ```
 
-On Unix-like systems, use:
+Unix-like:
 
 ```bash
-gcc main.c src/buf/buf.c src/io/io.c src/parser/inline.c src/parser/inline_html.c src/parser/parser.c src/parser/parser_line.c src/parser/parser_html.c src/path/path.c src/html/html.c -o mintif -std=c99 -O2 -I.
+gcc main.c \
+  src/buf/buf.c \
+  src/io/io.c \
+  src/parser/inline.c \
+  src/parser/inline_html.c \
+  src/parser/parser.c \
+  src/parser/parser_line.c \
+  src/parser/parser_html.c \
+  src/path/path.c \
+  src/html/html.c \
+  -o mintif -std=c99 -O2 -I.
 ```
 
 ### Usage
@@ -82,12 +104,12 @@ mintif <input.md> [options]
 
 Options:
 
-| Option | Description |
-| --- | --- |
-| `-o, --output <file>` | Output HTML file |
-| `-t, --title <text>` | Custom `<title>` value |
-| `-s, --styles <file>` | CSS file to embed |
-| `-h, --help` | Show help |
+| Option                | Description            |
+| --------------------- | ---------------------- |
+| `-o, --output <file>` | Output HTML file       |
+| `-t, --title <text>`  | Custom `<title>` value |
+| `-s, --styles <file>` | CSS file to embed      |
+| `-h, --help`          | Show help              |
 
 ### Examples
 

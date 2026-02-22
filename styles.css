@@ -51,7 +51,7 @@
 
         /* Blockquote */
         --theme-color-blockquote-bg:   hsl(120, 0%, 15%);
-        --theme-color-blockquote-text: #666666;
+        --theme-color-blockquote-text: #b8b8b8;
 
         /* Border & Divider */
         --theme-color-border:          #343434;
@@ -105,7 +105,8 @@ body {
     
     body {
         max-width: 100%;
-        padding: 2.5rem;
+        padding: 1.25rem;
+        font-size: var(--type-base);
     }
 
     h1,
@@ -116,14 +117,6 @@ body {
     h6 {
         margin-top: 0rem;
     }
-}
-
-div,
-p,
-span {
-    font-family: "Inter", "Leelawadee UI", system-ui, sans-serif;
-    letter-spacing: -0.2px;
-    font-size: 14.5px;
 }
 
 /* Headings */
@@ -191,6 +184,12 @@ a:focus {
     color: var(--theme-color-link-hover);
 }
 
+a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
 /* Code & Preformatted Text */
 
 code {
@@ -229,7 +228,7 @@ pre code {
 blockquote {
     background-color: var(--theme-color-blockquote-bg);
     margin: 0 0 1.5rem;
-    padding-left: 1rem;
+    padding-left: 0.65rem;
     color: var(--theme-color-blockquote-text);
     font-style: italic;
 }

@@ -5,6 +5,10 @@
 #include <stddef.h>
 
 /* Parse inline markdown (bold, italic, code, links, images) into buf */
-void parse_inline(Buf *out, const char *s, size_t len);
+void parse_inline(
+    Buf *out,
+    const char *s,
+    size_t len
+);
 
 #endif

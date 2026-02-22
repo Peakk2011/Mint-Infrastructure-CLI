@@ -42,9 +42,11 @@ static int is_allowed_scheme(const char *s, size_t len) {
 static int ascii_ieq(const char *a, size_t a_len, const char *b) {
     size_t b_len = strlen(b);
     if (a_len != b_len) return 0;
+
     for (size_t i = 0; i < a_len; i++) {
         if (tolower((unsigned char)a[i]) != tolower((unsigned char)b[i])) return 0;
     }
+
     return 1;
 }
 
@@ -60,6 +62,7 @@ int inline_sanitize_url(const char *url, size_t url_len, const char **out_ptr, s
 
     while (start < end && is_ws(url[start])) start++;
     while (end > start && is_ws(url[end - 1])) end--;
+    
     if (end <= start) return 0;
 
     for (size_t i = start; i < end; i++) {
@@ -69,12 +72,14 @@ int inline_sanitize_url(const char *url, size_t url_len, const char **out_ptr, s
 
     size_t i = start;
     while (i < end && url[i] != ':' && url[i] != '/' && url[i] != '?' && url[i] != '#') i++;
+    
     if (i < end && url[i] == ':') {
         if (!is_allowed_scheme(url + start, i - start)) return 0;
     }
 
     *out_ptr = url + start;
     *out_len = end - start;
+    
     return 1;
 }
 
@@ -95,6 +100,7 @@ static int is_allowed_html_tag(const char *name, size_t len) {
     for (size_t i = 0; i < sizeof(tags) / sizeof(tags[0]); i++) {
         if (ascii_ieq(name, len, tags[i])) return 1;
     }
+    
     return 0;
 }
 
@@ -124,25 +130,31 @@ static int is_allowed_html_attr(const char *tag, size_t tag_len, const char *att
                ascii_ieq(attr, attr_len, "rel") ||
                ascii_ieq(attr, attr_len, "name");
     }
+    
     if (ascii_ieq(tag, tag_len, "img")) {
         return ascii_ieq(attr, attr_len, "src") ||
                ascii_ieq(attr, attr_len, "alt");
     }
+    
     if (ascii_ieq(tag, tag_len, "table")) {
         return ascii_ieq(attr, attr_len, "cellpadding") ||
                ascii_ieq(attr, attr_len, "cellspacing");
     }
+    
     if (ascii_ieq(tag, tag_len, "td") || ascii_ieq(tag, tag_len, "th")) {
         return ascii_ieq(attr, attr_len, "colspan") ||
                ascii_ieq(attr, attr_len, "rowspan");
     }
+    
     if (ascii_ieq(tag, tag_len, "ol")) {
         return ascii_ieq(attr, attr_len, "start") ||
                ascii_ieq(attr, attr_len, "type");
     }
+    
     if (ascii_ieq(tag, tag_len, "li")) {
         return ascii_ieq(attr, attr_len, "value");
     }
+    
     if (ascii_ieq(tag, tag_len, "font")) {
         return ascii_ieq(attr, attr_len, "color") ||
                ascii_ieq(attr, attr_len, "size") ||
@@ -156,6 +168,7 @@ static int is_allowed_html_attr(const char *tag, size_t tag_len, const char *att
 static int parse_attr_name(const char *s, size_t len, size_t *i, size_t *name_start, size_t *name_len) {
     *name_start = *i;
     while (*i < len && is_name_char((unsigned char)s[*i])) (*i)++;
+    
     *name_len = *i - *name_start;
     return *name_len > 0;
 }
@@ -171,16 +184,20 @@ static int parse_attr_value(const char *s, size_t len, size_t *i, const char **v
 
     *has_value = 1;
     (*i)++;
+    
     while (*i < len && is_ws(s[*i])) (*i)++;
     if (*i >= len) return 0;
 
     if (s[*i] == '"' || s[*i] == '\'') {
         char quote = s[(*i)++];
         size_t start = *i;
+    
         while (*i < len && s[*i] != quote) (*i)++;
         if (*i >= len) return 0;
+    
         *value_ptr = s + start;
         *value_len = *i - start;
+    
         (*i)++;
         return 1;
     }
@@ -190,10 +207,12 @@ static int parse_attr_value(const char *s, size_t len, size_t *i, const char **v
            !(s[*i] == '/' && *i + 1 < len && s[*i + 1] == '>')) {
         (*i)++;
     }
+    
     if (*i == start) return 0;
 
     *value_ptr = s + start;
     *value_len = *i - start;
+    
     return 1;
 }
 
@@ -203,6 +222,7 @@ static void emit_attr(Buf *out,
                       const char *attr, size_t attr_len,
                       int has_value,
                       const char *value_ptr, size_t value_len) {
+    
     if (!is_allowed_html_attr(tag, tag_len, attr, attr_len)) return;
 
     if (!has_value) {
@@ -214,12 +234,15 @@ static void emit_attr(Buf *out,
     if (ascii_ieq(attr, attr_len, "href") || ascii_ieq(attr, attr_len, "src")) {
         const char *safe_url = NULL;
         size_t safe_len = 0;
+    
         if (!inline_sanitize_url(value_ptr, value_len, &safe_url, &safe_len)) return;
+    
         buf_puts(out, " ");
         buf_append(out, attr, attr_len);
         buf_puts(out, "=\"");
         buf_escape(out, safe_url, safe_len);
         buf_puts(out, "\"");
+    
         return;
     }
 
@@ -237,6 +260,7 @@ int inline_try_emit_html_tag(Buf *out, const char *s, size_t len, size_t *consum
 
     if (len >= 4 && s[1] == '!' && s[2] == '-' && s[3] == '-') {
         size_t j = 4;
+    
         while (j + 2 < len) {
             if (s[j] == '-' && s[j + 1] == '-' && s[j + 2] == '>') {
                 buf_append(out, s, j + 3);
@@ -245,11 +269,13 @@ int inline_try_emit_html_tag(Buf *out, const char *s, size_t len, size_t *consum
             }
             j++;
         }
+    
         return 0;
     }
 
     i++;
     int closing = 0;
+    
     if (i < len && s[i] == '/') {
         closing = 1;
         i++;
@@ -257,16 +283,19 @@ int inline_try_emit_html_tag(Buf *out, const char *s, size_t len, size_t *consum
 
     size_t tag_start = i;
     while (i < len && is_name_char((unsigned char)s[i])) i++;
+    
     size_t tag_len = i - tag_start;
     if (tag_len == 0 || !is_allowed_html_tag(s + tag_start, tag_len)) return 0;
 
     while (i < len && is_ws(s[i])) i++;
 
     if (closing) {
+    
         if (i >= len || s[i] != '>') return 0;
         buf_puts(out, "</");
         buf_append(out, s + tag_start, tag_len);
         buf_puts(out, ">");
+    
         *consumed = i + 1;
         return 1;
     }
@@ -284,6 +313,7 @@ int inline_try_emit_html_tag(Buf *out, const char *s, size_t len, size_t *consum
         const char *value_ptr = NULL;
         size_t value_len = 0;
         int has_value = 0;
+
         if (!parse_attr_value(s, len, &i, &value_ptr, &value_len, &has_value)) return 0;
 
         emit_attr(out,
@@ -298,6 +328,7 @@ int inline_try_emit_html_tag(Buf *out, const char *s, size_t len, size_t *consum
         *consumed = i + 2;
         return 1;
     }
+    
     if (i < len && s[i] == '>') {
         buf_puts(out, ">");
         *consumed = i + 1;

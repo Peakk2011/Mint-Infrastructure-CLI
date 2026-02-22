@@ -2,34 +2,63 @@
 #include "inline_html.h"
 
 /* Parse inline markdown syntax and emit HTML. */
-void parse_inline(Buf *out, const char *s, size_t len) {
+void parse_inline(Buf *out, const char *s, size_t len)
+{
     size_t i = 0;
 
-    while (i < len) {
-        if (s[i] == '<') {
+    while (i < len)
+    {
+        if (s[i] == '<')
+        {
             size_t consumed = 0;
-            if (inline_try_emit_html_tag(out, s + i, len - i, &consumed)) {
+            if (inline_try_emit_html_tag(out, s + i, len - i, &consumed))
+            {
                 i += consumed;
                 continue;
             }
         }
 
         /* HTML escaping fallback */
-        if (s[i] == '&') { buf_puts(out, "&amp;"); i++; continue; }
-        if (s[i] == '<') { buf_puts(out, "&lt;"); i++; continue; }
-        if (s[i] == '>') { buf_puts(out, "&gt;"); i++; continue; }
+        if (s[i] == '&')
+        {
+            buf_puts(out, "&amp;");
+            i++;
+            continue;
+        }
+
+        if (s[i] == '<')
+        {
+            buf_puts(out, "&lt;");
+            i++;
+            continue;
+        }
+
+        if (s[i] == '>')
+        {
+            buf_puts(out, "&gt;");
+            i++;
+            continue;
+        }
 
         /* ![alt](url) */
-        if (s[i] == '!' && i + 1 < len && s[i + 1] == '[') {
+        if (s[i] == '!' && i + 1 < len && s[i + 1] == '[')
+        {
             size_t a = i + 2, a_end = i + 2;
-            while (a_end < len && s[a_end] != ']') a_end++;
-            if (a_end < len && a_end + 1 < len && s[a_end + 1] == '(') {
+        
+            while (a_end < len && s[a_end] != ']')
+                a_end++;
+                
+            if (a_end < len && a_end + 1 < len && s[a_end + 1] == '(')
+            {
                 size_t u = a_end + 2, u_end = a_end + 2;
-                while (u_end < len && s[u_end] != ')') u_end++;
-                if (u_end < len) {
+                while (u_end < len && s[u_end] != ')')
+                    u_end++;
+                if (u_end < len)
+                {
                     const char *safe_url = NULL;
                     size_t safe_len = 0;
-                    if (!inline_sanitize_url(s + u, u_end - u, &safe_url, &safe_len)) {
+                    if (!inline_sanitize_url(s + u, u_end - u, &safe_url, &safe_len))
+                    {
                         buf_append(out, &s[i], 1);
                         i++;
                         continue;
@@ -46,16 +75,22 @@ void parse_inline(Buf *out, const char *s, size_t len) {
         }
 
         /* [text](url) */
-        if (s[i] == '[') {
+        if (s[i] == '[')
+        {
             size_t t = i + 1, t_end = i + 1;
-            while (t_end < len && s[t_end] != ']') t_end++;
-            if (t_end < len && t_end + 1 < len && s[t_end + 1] == '(') {
+            while (t_end < len && s[t_end] != ']')
+                t_end++;
+            if (t_end < len && t_end + 1 < len && s[t_end + 1] == '(')
+            {
                 size_t u = t_end + 2, u_end = t_end + 2;
-                while (u_end < len && s[u_end] != ')') u_end++;
-                if (u_end < len) {
+                while (u_end < len && s[u_end] != ')')
+                    u_end++;
+                if (u_end < len)
+                {
                     const char *safe_url = NULL;
                     size_t safe_len = 0;
-                    if (!inline_sanitize_url(s + u, u_end - u, &safe_url, &safe_len)) {
+                    if (!inline_sanitize_url(s + u, u_end - u, &safe_url, &safe_len))
+                    {
                         buf_append(out, &s[i], 1);
                         i++;
                         continue;
@@ -72,10 +107,13 @@ void parse_inline(Buf *out, const char *s, size_t len) {
         }
 
         /* ***bold+italic*** */
-        if (i + 2 < len && s[i] == '*' && s[i + 1] == '*' && s[i + 2] == '*') {
+        if (i + 2 < len && s[i] == '*' && s[i + 1] == '*' && s[i + 2] == '*')
+        {
             size_t e = i + 3;
-            while (e + 2 < len && !(s[e] == '*' && s[e + 1] == '*' && s[e + 2] == '*')) e++;
-            if (e + 2 < len) {
+            while (e + 2 < len && !(s[e] == '*' && s[e + 1] == '*' && s[e + 2] == '*'))
+                e++;
+            if (e + 2 < len)
+            {
                 buf_puts(out, "<strong><em>");
                 parse_inline(out, s + i + 3, e - (i + 3));
                 buf_puts(out, "</em></strong>");
@@ -85,10 +123,13 @@ void parse_inline(Buf *out, const char *s, size_t len) {
         }
 
         /* **bold** */
-        if (i + 1 < len && s[i] == '*' && s[i + 1] == '*') {
+        if (i + 1 < len && s[i] == '*' && s[i + 1] == '*')
+        {
             size_t e = i + 2;
-            while (e + 1 < len && !(s[e] == '*' && s[e + 1] == '*')) e++;
-            if (e + 1 < len) {
+            while (e + 1 < len && !(s[e] == '*' && s[e + 1] == '*'))
+                e++;
+            if (e + 1 < len)
+            {
                 buf_puts(out, "<strong>");
                 parse_inline(out, s + i + 2, e - (i + 2));
                 buf_puts(out, "</strong>");
@@ -98,10 +139,13 @@ void parse_inline(Buf *out, const char *s, size_t len) {
         }
 
         /* *italic* */
-        if (s[i] == '*' && (i == 0 || s[i - 1] != '*')) {
+        if (s[i] == '*' && (i == 0 || s[i - 1] != '*'))
+        {
             size_t e = i + 1;
-            while (e < len && s[e] != '*') e++;
-            if (e < len) {
+            while (e < len && s[e] != '*')
+                e++;
+            if (e < len)
+            {
                 buf_puts(out, "<em>");
                 parse_inline(out, s + i + 1, e - (i + 1));
                 buf_puts(out, "</em>");
@@ -111,10 +155,13 @@ void parse_inline(Buf *out, const char *s, size_t len) {
         }
 
         /* _italic_ */
-        if (s[i] == '_') {
+        if (s[i] == '_')
+        {
             size_t e = i + 1;
-            while (e < len && s[e] != '_') e++;
-            if (e < len) {
+            while (e < len && s[e] != '_')
+                e++;
+            if (e < len)
+            {
                 buf_puts(out, "<em>");
                 parse_inline(out, s + i + 1, e - (i + 1));
                 buf_puts(out, "</em>");
@@ -124,10 +171,13 @@ void parse_inline(Buf *out, const char *s, size_t len) {
         }
 
         /* ~~strikethrough~~ */
-        if (i + 1 < len && s[i] == '~' && s[i + 1] == '~') {
+        if (i + 1 < len && s[i] == '~' && s[i + 1] == '~')
+        {
             size_t e = i + 2;
-            while (e + 1 < len && !(s[e] == '~' && s[e + 1] == '~')) e++;
-            if (e + 1 < len) {
+            while (e + 1 < len && !(s[e] == '~' && s[e + 1] == '~'))
+                e++;
+            if (e + 1 < len)
+            {
                 buf_puts(out, "<del>");
                 parse_inline(out, s + i + 2, e - (i + 2));
                 buf_puts(out, "</del>");
@@ -137,10 +187,13 @@ void parse_inline(Buf *out, const char *s, size_t len) {
         }
 
         /* `code` */
-        if (s[i] == '`') {
+        if (s[i] == '`')
+        {
             size_t e = i + 1;
-            while (e < len && s[e] != '`') e++;
-            if (e < len) {
+            while (e < len && s[e] != '`')
+                e++;
+            if (e < len)
+            {
                 buf_puts(out, "<code>");
                 buf_escape(out, s + i + 1, e - (i + 1));
                 buf_puts(out, "</code>");

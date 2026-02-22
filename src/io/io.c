@@ -12,6 +12,7 @@ char *io_read_file(const char *path, size_t *out_len) {
     }
 
     long end_pos = ftell(f);
+    
     if (end_pos < 0) {
         fclose(f);
         return NULL;
@@ -24,12 +25,14 @@ char *io_read_file(const char *path, size_t *out_len) {
 
     size_t sz = (size_t)end_pos;
     char *buf = (char *)malloc(sz + 1);
+
     if (!buf) {
         fclose(f);
         return NULL;
     }
 
     size_t r = fread(buf, 1, sz, f);
+    
     if (r != sz) {
         free(buf);
         fclose(f);
@@ -37,6 +40,7 @@ char *io_read_file(const char *path, size_t *out_len) {
     }
 
     buf[sz] = '\0';
+    
     if (fclose(f) != 0) {
         free(buf);
         return NULL;
@@ -52,6 +56,8 @@ int io_write_file(const char *path, const char *data, size_t len) {
 
     size_t w = fwrite(data, 1, len, f);
     int close_ok = fclose(f) == 0;
+    
     if (w != len || !close_ok) return 0;
+    
     return 1;
 }

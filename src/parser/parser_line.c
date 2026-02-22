@@ -64,13 +64,15 @@ int is_blank(const char *s, size_t len) {
 
 /* Horizontal rule detector: ---, ***, ___ with optional spaces. */
 int is_rule(const char *s, size_t len) {
+    if (len == 0) return 0;
+
     char c = s[0];
     if (c != '-' && c != '*' && c != '_') return 0;
 
     size_t count = 0;
     for (size_t i = 0; i < len; i++) {
         if (s[i] == c) count++;
-        else if (s[i] != ' ') return 0;
+        else if (s[i] != ' ' && s[i] != '\t') return 0;
     }
     return count >= 3;
 }
@@ -84,7 +86,8 @@ int heading_level(const char *s, size_t len) {
     return 0;
 }
 
-/* Setext heading underline detector. Returns level 1/2 or 0. */
+/* Setext heading underline detector. Returns level 1/2 or 0.
+   Requires at least 2 markers to avoid accidental headings on lone '-'. */
 int setext_level(const char *s, size_t len) {
     size_t i = 0;
     while (i < len && (s[i] == ' ' || s[i] == '\t')) i++;
@@ -99,7 +102,7 @@ int setext_level(const char *s, size_t len) {
         i++;
     }
     while (i < len && (s[i] == ' ' || s[i] == '\t')) i++;
-    if (i != len || count == 0) return 0;
+    if (i != len || count < 2) return 0;
 
     return marker == '=' ? 1 : 2;
 }

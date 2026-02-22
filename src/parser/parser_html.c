@@ -6,10 +6,12 @@
 /* Case-insensitive compare against string literals. */
 static int ascii_ieq_n(const char *a, size_t a_len, const char *b) {
     size_t i = 0;
+
     while (i < a_len && b[i]) {
         if (tolower((unsigned char)a[i]) != tolower((unsigned char)b[i])) return 0;
         i++;
     }
+    
     return i == a_len && b[i] == '\0';
 }
 
@@ -48,6 +50,7 @@ int is_void_html_tag(const char *name, size_t len) {
 /* Parse one attribute name token while validating syntax. */
 static int parse_attr_name(const char *t, size_t limit, size_t *i) {
     size_t start = *i;
+    
     while (*i < limit && is_name_char((unsigned char)t[*i])) (*i)++;
     return *i > start;
 }
@@ -69,10 +72,12 @@ static int parse_attr_value(const char *t, size_t limit, size_t *i) {
     }
 
     size_t val_start = *i;
+    
     while (*i < limit && !is_tag_ws(t[*i]) && t[*i] != '>') {
         if (t[*i] == '<' || t[*i] == '"' || t[*i] == '\'' || t[*i] == '=') return 0;
         (*i)++;
     }
+    
     return *i > val_start;
 }
 
@@ -90,6 +95,7 @@ int parse_html_tag_line(const char *ptr, size_t len, char *name_out, size_t name
 
     size_t tag_end = 0;
     char quote = 0;
+    
     for (size_t k = 1; k < tlen; k++) {
         if (quote) {
             if (t[k] == quote) quote = 0;
@@ -104,12 +110,14 @@ int parse_html_tag_line(const char *ptr, size_t len, char *name_out, size_t name
             break;
         }
     }
+    
     if (tag_end == 0) return 0;
 
     *is_closing = 0;
     *is_self_close = 0;
 
     size_t i = 1;
+    
     if (i < tag_end && t[i] == '/') {
         *is_closing = 1;
         i++;
@@ -131,14 +139,18 @@ int parse_html_tag_line(const char *ptr, size_t len, char *name_out, size_t name
 
     size_t content_limit = tag_end;
     size_t j = content_limit;
+    
     while (j > 0 && is_tag_ws(t[j - 1])) j--;
+    
     if (j > 0 && t[j - 1] == '/') {
         *is_self_close = 1;
         content_limit = j - 1;
+    
         while (content_limit > 0 && is_tag_ws(t[content_limit - 1])) content_limit--;
     }
 
     while (i < content_limit && is_tag_ws(t[i])) i++;
+    
     if (*is_closing) {
         return !*is_self_close && i == content_limit;
     }
@@ -168,10 +180,12 @@ int contains_closing_html_tag(const char *ptr, size_t len, const char *name) {
         if (ptr[i] != '<' || ptr[i + 1] != '/') continue;
 
         size_t j = 0;
+ 
         while (j < name_len && i + 2 + j < len &&
                tolower((unsigned char)ptr[i + 2 + j]) == tolower((unsigned char)name[j])) {
             j++;
         }
+ 
         if (j == name_len && i + 2 + j < len &&
             !is_name_char((unsigned char)ptr[i + 2 + j])) {
             return 1;
