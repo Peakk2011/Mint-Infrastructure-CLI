@@ -3,7 +3,7 @@ import type {
     MintInfrastructureConvertResult,
 } from "./mint-infrastructure.js";
 
-const { contextBridge, ipcRenderer, webUtils } = require("electron") as typeof import("electron");
+import { contextBridge, ipcRenderer, webUtils } from "electron";
 
 type MintifInspectPathResult =
     | {

@@ -19,6 +19,19 @@ export default [
                 "error",
                 { prefer: "type-imports", fixStyle: "inline-type-imports" },
             ],
+            "@typescript-eslint/no-unused-vars": [
+                "error",
+                {
+                    argsIgnorePattern: "^_",
+                    varsIgnorePattern: "^_",
+                },
+            ],
+        },
+    },
+    {
+        files: ["src/darling-runtime/**/*.ts"],
+        rules: {
+            "@typescript-eslint/no-explicit-any": "off",
         },
     },
 ];
