@@ -2,3 +2,4 @@ dist/
 mintif.exe
 .DS_Store
 /.vscode/
+release/

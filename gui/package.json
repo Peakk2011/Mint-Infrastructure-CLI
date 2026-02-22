@@ -12,7 +12,7 @@
     "test": "npm run build:ts && node --test tests/convert-process.test.mjs",
     "start": "node scripts/start-electron.mjs",
     "dev": "npm run build && node scripts/start-electron.mjs",
-    "package:win": "npm run sync:mintif && npm run build && electron-builder --win"
+    "package:win": "npm run sync:mintif && npm run build && electron-builder --win --publish never"
   },
   "keywords": [
     "markdown",
@@ -26,19 +26,30 @@
   "devDependencies": {
     "@eslint/js": "^9.20.0",
     "@types/node": "^25.2.2",
+    "electron": "^40.2.1",
     "electron-builder": "^26.0.12",
     "eslint": "^9.20.1",
     "typescript-eslint": "^8.24.1",
     "typescript": "^5.9.2"
   },
-  "dependencies": {
-    "electron": "^40.2.1"
-  },
   "build": {
     "appId": "com.mint.infrastructure.gui",
     "productName": "Mint Infrastructure GUI",
+    "icon": "assets/logo/Mintif Logo.ico",
+    "directories": {
+      "output": "release"
+    },
     "files": [
       "dist/**/*",
+      "!dist/win-unpacked{,/**}",
+      "!dist/*.exe",
+      "!dist/*.blockmap",
+      "!dist/*.7z",
+      "!dist/builder-debug.yml",
+      "!dist/builder-effective-config.yaml",
+      "!dist/**/*.map",
+      "!dist/**/*.d.ts",
+      "!dist/**/*.d.cts",
       "package.json"
     ],
     "extraResources": [
@@ -48,12 +59,26 @@
         "filter": [
           "**/*"
         ]
+      },
+      {
+        "from": "bindings/build/Release",
+        "to": "darling",
+        "filter": [
+          "**/*"
+        ]
       }
     ],
+    "publish": [],
     "win": {
+      "icon": "assets/logo/Mintif Logo.ico",
       "target": [
         "nsis"
       ]
+    },
+    "nsis": {
+      "installerIcon": "assets/logo/Mintif Logo.ico",
+      "uninstallerIcon": "assets/logo/Mintif Logo.ico",
+      "installerHeaderIcon": "assets/logo/Mintif Logo.ico"
     }
   }
 }

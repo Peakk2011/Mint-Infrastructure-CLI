@@ -2,22 +2,76 @@
 
 Electron desktop UI for `mintif.exe` conversion.
 
-## Install
+## Build GUI (Windows)
 
-1. `cd gui`
-2. `npm install`
+### Prerequisites
 
-## Run (dev)
+- Windows (x64)
+- Node.js + npm
+- GCC in `PATH` (used by root `build.bat`)
 
-1. `npm run sync:mintif`
-2. `npm run build`
-3. `npm run start`
+### Build and run (dev)
 
-Notes:
+From repo root:
 
-- `npm run build` compiles TypeScript and copies renderer assets/bindings to `dist/`.
-- Default startup URL is `dist/renderer/index.html`.
-- `npm run start` uses `scripts/start-electron.mjs` and clears `ELECTRON_RUN_AS_NODE`.
+```powershell
+.\build.bat
+cd gui
+npm install
+npm run dev
+```
+
+### Build installer (`.exe`)
+
+From repo root:
+
+```powershell
+.\build.bat
+cd gui
+npm install
+npm run package:win
+```
+
+Output files:
+
+- `gui/release/Mint Infrastructure GUI Setup 1.0.0.exe`
+- `gui/release/Mint Infrastructure GUI Setup 1.0.0.exe.blockmap`
+- `gui/release/win-unpacked/Mint Infrastructure GUI.exe` (portable test run)
+
+What gets bundled:
+
+- `mintif.exe` and `styles.css` from repo `dist/` into `resources/mintif`
+- `darling.node` from `gui/bindings/build/Release` into `resources/darling`
+- App icon and installer icon from `gui/assets/logo/Mintif Logo.ico`
+
+### If built app is not using Darling Window
+
+When native addon load fails, app falls back to plain `BrowserWindow`.
+
+Check bundled native addon:
+
+```powershell
+Get-ChildItem .\gui\release\win-unpacked\resources\darling
+```
+
+Expected file:
+
+- `gui/release/win-unpacked/resources/darling/darling.node`
+
+Optional override for local debug:
+
+```powershell
+$env:DARLING_NODE_PATH = "E:\path\to\darling.node"
+npm run start
+```
+
+## Core Commands
+
+- `npm run build` compiles TypeScript and copies renderer assets to `dist/`.
+- `npm run start` launches Electron from built output.
+- `npm run dev` runs build then start.
+- `npm run lint` runs ESLint on TypeScript sources.
+- `npm test` runs Node tests after TypeScript build.
 
 ## Features
 
@@ -39,13 +93,6 @@ Notes:
 - `layoutWidth`: `centered | wide`
 - `timeoutMs`: clamped to `5_000..300_000` (default `45_000`)
 
-## Error Handling
-
-- Invalid input extension returns a clear validation error.
-- Missing `mintif.exe` or `styles.css` returns searched-path diagnostics.
-- Non-zero process exit, spawn failure, and timeout are surfaced with `stdout`/`stderr`.
-- Temporary generated theme CSS files are cleaned up in success/error paths.
-
 ## Renderer API (from preload)
 
 - `window.mintif.pickMarkdownFile(): Promise<string | null>`
@@ -53,15 +100,3 @@ Notes:
 - `window.mintif.inspectPath(candidatePath: string): Promise<{ ok: true, ... } | { ok: false, error: string }>`
 - `window.mintif.openPath(targetPath: string): Promise<{ ok: true } | { ok: false, error: string }>`
 - `window.mintif.convertMarkdown(request): Promise<MintInfrastructureConvertResult>`
-
-## Testing and Lint
-
-- `npm run lint` - ESLint for TypeScript sources.
-- `npm test` - builds TS then runs `node:test` cases.
-
-## Package (Windows)
-
-1. `npm run package:win`
-
-`mintif.exe` and `styles.css` are bundled from `vendor/mintif` to
-`resources/mintif` via `extraResources`.

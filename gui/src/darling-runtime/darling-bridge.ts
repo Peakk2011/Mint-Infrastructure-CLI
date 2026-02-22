@@ -13,6 +13,7 @@ const thisDir = path.dirname(thisFile);
 
 const getAddonCandidates = (): string[] => {
   const candidates: string[] = [];
+  const resourcesPath = (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath;
 
   const envPath = process.env.DARLING_NODE_PATH?.trim();
   if (envPath) {
@@ -25,6 +26,13 @@ const getAddonCandidates = (): string[] => {
     path.resolve(process.cwd(), "bindings/build/Release/darling.node"),
     path.resolve(process.cwd(), "../Darling/bindings/build/Release/darling.node"),
   );
+
+  if (resourcesPath) {
+    candidates.push(
+      path.resolve(resourcesPath, "darling/darling.node"),
+      path.resolve(resourcesPath, "bindings/build/Release/darling.node"),
+    );
+  }
 
   return Array.from(new Set(candidates));
 };
