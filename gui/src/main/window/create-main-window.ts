@@ -2,7 +2,7 @@ import { BrowserWindow } from "electron";
 
 import { CreateWindow } from "../../darling-runtime/index.js";
 import { WINDOW_SIZE, appTitle, preloadPath } from "../config/runtime.js";
-// import { disableDevTools } from "./devtools.js";
+import { disableDevTools } from "./devtools.js";
 
 export type DarlingWindowInstance = Awaited<ReturnType<typeof CreateWindow>>;
 
@@ -29,7 +29,7 @@ const createElectronFallbackWindow = (windowUrl: string): CreatedWindow => {
             nodeIntegration: false,
             contextIsolation: true,
             preload: preloadPath,
-            // devTools: false,
+            devTools: false,
         },
     });
 
@@ -52,7 +52,7 @@ const createDarlingWindow = async (windowUrl: string): Promise<CreatedWindow> =>
                 nodeIntegration: false,
                 contextIsolation: true,
                 preload: preloadPath,
-                // devTools: false,
+                devTools: false,
             },
             electron: (browserWindow: BrowserWindow) => {
                 browserWindow.setMinimumSize(WINDOW_SIZE.width, WINDOW_SIZE.height);
@@ -77,6 +77,6 @@ const createDarlingWindow = async (windowUrl: string): Promise<CreatedWindow> =>
 
 export const createMainWindow = async (windowUrl: string): Promise<CreatedWindow> => {
     const createdWindow = await createDarlingWindow(windowUrl);
-    // disableDevTools(createdWindow.browserWindow);
+    disableDevTools(createdWindow.browserWindow);
     return createdWindow;
 };
