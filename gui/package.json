@@ -4,15 +4,24 @@
   "description": "Desktop GUI for the Mint Infrastructure Markdown-to-HTML compiler.",
   "main": "dist/main.js",
   "scripts": {
-    "sync:mintif": "powershell -ExecutionPolicy Bypass -File scripts/sync-mintif.ps1",
-    "sync:renderer": "powershell -ExecutionPolicy Bypass -File scripts/sync-renderer-assets.ps1",
-    "build:ts": "tsc",
-    "build": "npm run build:ts && npm run sync:renderer",
     "lint": "eslint \"src/**/*.{ts,cts}\"",
     "test": "npm run build:ts && node --test tests/convert-process.test.mjs",
+
+    "build:ts": "tsc",
+    "build:renderer:win": "npm run build:ts && npm run sync:renderer",
+    "build:renderer:mac": "npm run build:ts && npm run sync:renderer:mac",
+
+    "sync:mintif": "powershell -ExecutionPolicy Bypass -File scripts/sync-mintif.ps1",
+    "sync:mintif:mac": "bash scripts/sync-mintif.sh",
+    "sync:renderer": "powershell -ExecutionPolicy Bypass -File scripts/sync-renderer-assets.ps1",
+    "sync:renderer:mac": "bash scripts/sync-renderer-assets.sh",
+
+    "dev": "npm run build:renderer:win && node scripts/start-electron.mjs",
+    "dev:mac": "npm run build:renderer:mac && node scripts/start-electron.mjs",
     "start": "node scripts/start-electron.mjs",
-    "dev": "npm run build && node scripts/start-electron.mjs",
-    "package:win": "npm run sync:mintif && npm run build && electron-builder --win --publish never"
+
+    "package:win": "npm run sync:mintif && npm run build:renderer:win && electron-builder --win --publish never",
+    "package:mac": "npm run sync:mintif:mac && npm run build:renderer:mac && electron-builder --mac --publish never"
   },
   "keywords": [
     "markdown",

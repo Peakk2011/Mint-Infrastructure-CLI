@@ -10,6 +10,30 @@
     --accent-soft: rgba(0, 0, 0, 0.06);
     --ok: #3a3a3a;
     --danger: #1b1b1b;
+    --confirm-file-bg: #ffffff;
+    --action-btn-bg: rgba(255, 255, 255, 0.74);
+    --action-btn-border: #e0e0e0;
+    --action-btn-color: #2b2b2b;
+    --action-btn-hover-border: #aaaaaa;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #242424;
+        --panel: #242424;
+        --ink: #ededed;
+        --muted: #a0a0a0;
+        --edge: #4a4a4a;
+        --accent: #c8c8c8;
+        --accent-soft: rgba(255, 255, 255, 0.07);
+        --ok: #c8c8c8;
+        --danger: #ededed;
+        --confirm-file-bg: #3d3d3d;
+        --action-btn-bg: rgba(255, 255, 255, 0.06);
+        --action-btn-border: #4a4a4a;
+        --action-btn-color: #ededed;
+        --action-btn-hover-border: #787878;
+    }
 }
 
 *,
@@ -148,8 +172,6 @@ body {
     margin-bottom: 0.85rem;
 }
 
-/* .confirm-markdown-icons {} */
-
 .confirm-card-content {
     position: fixed;
     top: 50%;
@@ -160,7 +182,7 @@ body {
 .confirm-file {
     width: fit-content;
     max-width: 260px;
-    background: #fff;
+    background: var(--confirm-file-bg);
     border-radius: 100vmax;
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05),
         0 24px 48px rgba(0, 0, 0, 0.06);
@@ -190,10 +212,10 @@ body {
 }
 
 .action-btn {
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--action-btn-border);
     border-radius: 100vmax;
-    background: rgba(255, 255, 255, 0.74);
-    color: #2b2b2b;
+    background: var(--action-btn-bg);
+    color: var(--action-btn-color);
     font: inherit;
     font-size: 12px;
     font-weight: 550;
@@ -207,14 +229,14 @@ body {
 
 .action-btn:hover:not(:disabled),
 .action-btn:focus-visible:not(:disabled) {
-    border-color: #aaaaaa;
+    border-color: var(--action-btn-hover-border);
     background: var(--accent-soft);
     color: var(--ink);
     outline: none;
 }
 
 .action-primary {
-    border-color: #aaaaaa;
+    border-color: var(--action-btn-hover-border);
     background: var(--accent-soft);
     color: var(--ink);
 }
@@ -248,6 +270,16 @@ body {
 
 .status.error {
     color: #8b2f2f;
+}
+
+@media (prefers-color-scheme: dark) {
+    .status.success {
+        color: #4caf8a;
+    }
+
+    .status.error {
+        color: #e07070;
+    }
 }
 
 .hidden {

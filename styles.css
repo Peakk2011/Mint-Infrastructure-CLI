@@ -46,11 +46,11 @@
         --theme-color-link-hover:      #999999;
 
         /* Code & Preformatted */
-        --theme-color-code-bg:         #1f1f1f;
-        --theme-color-code-outline:    hsl(0, 0%, 88%); /* Unused in dark; retained as fallback */
+        --theme-color-code-bg:         hsl(0, 0%, 9%);
+        --theme-color-code-outline:    hsl(0, 0%, 15%);
 
         /* Blockquote */
-        --theme-color-blockquote-bg:   hsl(120, 0%, 15%);
+        --theme-color-blockquote-bg:   hsl(0, 0%, 12%);
         --theme-color-blockquote-text: #b8b8b8;
 
         /* Border & Divider */
@@ -231,6 +231,14 @@ blockquote {
     padding-left: 0.65rem;
     color: var(--theme-color-blockquote-text);
     font-style: italic;
+
+    display: flex;
+    align-items: center;
+    height: 32px;
+}
+
+blockquote p {
+    margin: 0;
 }
 
 /* Lists */

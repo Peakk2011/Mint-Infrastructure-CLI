@@ -7,7 +7,7 @@ import type {
 } from "../mint-infrastructure.js";
 import {
     inferOutputPath,
-    resolveMintifExePath,
+    resolveMintInfrastructureBinaryPath,
     validateInputMarkdown,
 } from "./convert-paths.js";
 import { runConvertProcess } from "./convert-process.js";
@@ -77,7 +77,7 @@ export const runMintInfrastructureConvertComponent = async (
 
     let exePath = "";
     try {
-        exePath = resolveMintifExePath();
+        exePath = resolveMintInfrastructureBinaryPath();
     } catch (error) {
         return { ok: false, error: (error as Error).message, outputPath };
     }
